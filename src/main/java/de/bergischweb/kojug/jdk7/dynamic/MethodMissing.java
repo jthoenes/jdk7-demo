@@ -20,6 +20,7 @@ public class MethodMissing {
   
     static MethodHandles.Lookup lookup;
     static Class thisClass;
+    static MethodType type;
     static MethodHandle method_missing;
     
     static {
@@ -27,7 +28,8 @@ public class MethodMissing {
         try {
          lookup = MethodHandles.lookup();
          thisClass = lookup.lookupClass();
-         method_missing = lookup.findStatic(thisClass, "method_missing", MethodType.methodType(void.class, String.class, Object[].class));
+         type = MethodType.methodType(void.class, String.class, Object[].class);
+         method_missing = lookup.findStatic(thisClass, "method_missing", type);
         } catch(NoAccessException e){
             throw new RuntimeException(e);
         }
@@ -39,6 +41,7 @@ public class MethodMissing {
   }
     
   private static CallSite bootstrapDynamic(Class caller, String name, MethodType type) throws NoAccessException{
+    type = type.insertParameterTypes(0, String.class);
     return new ConstantCallSite(method_missing.asType(type));
   }
 }
